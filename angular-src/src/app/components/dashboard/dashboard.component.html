@@ -1,0 +1,44 @@
+<h2 class="page-header">Dashboard</h2>
+<button type="button" class="btn btn-primary" (click)="modal1.show()">Create New Team</button>
+
+<h2>Teams</h2>
+<ul class="list-group">
+  <li *ngFor="let team of teams" class="list-group-item" (click)="goToTeam(team)">
+    {{team.city}} {{team.name}} ({{team.abbr}})
+  </li>
+</ul>
+
+<app-modal #modal1>
+  <div class="app-modal-header">
+    <label>New Team</label>
+  </div>
+  <div class="app-modal-body">
+    <form>
+  		<div class="form-group">
+    		<label>City</label>
+    		<input type="text" [(ngModel)]="city" name="city" class="form-control">
+  		</div>
+  		<div class="form-group">
+    		<label>Name</label>
+    		<input type="text" [(ngModel)]="name" name="name" class="form-control">
+  		</div>
+  		<div class="form-group">
+    		<label>Abbreviation</label>
+    		<input type="text" [(ngModel)]="abbr" name="abbr" class="form-control" >
+  		</div>
+		</form>
+  </div>
+  <div class="app-modal-footer">
+    <button type="button" class="btn btn-default" (click)="modal1.hide()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="createTeam()">Create</button>
+  </div>
+</app-modal>
+
+<h3>Select Two Teams to Simulate A Match!</h3>
+<select [(ngModel)]="selectTeam1">
+  <option *ngFor="let team1 of teams" [ngValue]="team1" >{{team1.city}} {{team1.name}}</option>
+</select>
+<button type="button" class="btn btn-primary" (click)="simulate()">VS</button>
+<select [(ngModel)]="selectTeam2">
+  <option *ngFor="let team2 of teams" [ngValue]="team2" >{{team2.city}} {{team2.name}}</option>
+</select>

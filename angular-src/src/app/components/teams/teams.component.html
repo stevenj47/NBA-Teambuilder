@@ -1,0 +1,213 @@
+<h2 class="page-header">Edit Team: {{team?.city}} {{team?.name}}</h2>
+
+<h3> Starters </h3>
+
+<table class="table table-condensed">
+  <thead>
+    <tr>
+      <th>POS</th>
+      <th>NAME</th>
+      <th>GP</th>
+      <th>GS</th>
+      <th>MIN</th>
+      <th>PTS</th>
+      <th>REB</th>
+      <th>AST</th>
+      <th>STl</th>
+      <th>BLK</th>
+      <th>TOV</th>
+      <th>PF</th>
+      <th>FG%</th>
+      <th>3PT%</th>
+      <th>FT%</th>
+    </tr>
+  </thead>
+  <tbody *ngIf="team_starters">
+    <tr *ngFor="let key of starter_pos">
+      <td>{{key}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.name}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.gp}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.gs}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.mins}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.pts}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.rebs}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.asts}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.stls}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.blks}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.tovs}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.pfs}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.fgPct}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.fg3Pct}}</td>
+      <td>{{team_starters[key.toLowerCase()]?.seasonStat.ftPct}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3> Bench </h3>
+
+<table class="table table-condensed">
+  <thead>
+    <tr>
+      <th>POS</th>
+      <th>NAME</th>
+      <th>GP</th>
+      <th>GS</th>
+      <th>MIN</th>
+      <th>PTS</th>
+      <th>REB</th>
+      <th>AST</th>
+      <th>STl</th>
+      <th>BLK</th>
+      <th>TOV</th>
+      <th>PF</th>
+      <th>FG%</th>
+      <th>3PT%</th>
+      <th>FT%</th>
+    </tr>
+  </thead>
+  <tbody *ngIf="team_bench">
+    <tr *ngFor="let bench of team_bench">
+      <td>{{team_bench.indexOf(bench) + 6}}</td>
+      <td>{{bench?.name}}</td>
+      <td>{{bench?.seasonStat.gp}}</td>
+      <td>{{bench?.seasonStat.gs}}</td>
+      <td>{{bench?.seasonStat.mins}}</td>
+      <td>{{bench?.seasonStat.pts}}</td>
+      <td>{{bench?.seasonStat.rebs}}</td>
+      <td>{{bench?.seasonStat.asts}}</td>
+      <td>{{bench?.seasonStat.stls}}</td>
+      <td>{{bench?.seasonStat.blks}}</td>
+      <td>{{bench?.seasonStat.tovs}}</td>
+      <td>{{bench?.seasonStat.pfs}}</td>
+      <td>{{bench?.seasonStat.fgPct}}</td>
+      <td>{{bench?.seasonStat.fg3Pct}}</td>
+      <td>{{bench?.seasonStat.ftPct}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<form (submit)="onPlayerNameSubmit()">
+  <div class="form-group">
+    <label>Player Name</label>
+    <input type="text" [(ngModel)]="playername" name="playername" class="form-control">
+  </div>
+  <input type="submit" class="btn btn-primary" value="Find Player">
+</form>
+
+<h3> Player Rotation </h3>
+<table class="table table-condensed">
+  <thead>
+    <tr>
+      <th>POS</th>
+      <th colspan="6">ROTATIONS (START - END)</th>
+    </tr>
+  </thead>
+  <tbody *ngIf="team_rotations">
+    <tr *ngFor="let pos of starter_pos">
+      <td>{{pos}}</td>
+      <td *ngFor="let rot of team_rotations.minutes[pos.toLowerCase()]">
+        {{rot.name}} <br> ({{rot.minute_start}}:00 - {{rot.minute_end}}:00)
+        <button type="button" class="close" aria-label="Close" (click)="removeFromRot(rot, pos)">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<app-modal #modal1>
+  <div class="app-modal-header">
+    <label>{{playerData?.name}}</label>
+  </div>
+  <div class="app-modal-body">
+    <label><b>Season:</b></label>
+    <select [(ngModel)]="selectedSeason" (ngModelChange)="onChange($event)">
+      <option *ngFor="let season of seasons" [value]="seasons.indexOf(season)" >{{season}}</option>
+    </select>
+    <label><b>&nbsp; at Position:</b></label>
+    <select [(ngModel)]="selectedPosition">
+      <option *ngFor="let pos of positions" [value]="pos">{{pos}}</option>
+    </select>
+    <table class="table table-condensed">
+    <thead>
+      <tr>
+        <th>Age</th>
+        <th>Points</th>
+        <th>Rebounds</th>
+        <th>Assists</th>
+        <th>Blocks</th>
+        <th>Steals</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{currentSeasonStats?.age}}</td>
+        <td>{{currentSeasonStats?.pts}}</td>
+        <td>{{currentSeasonStats?.rebs}}</td>
+        <td>{{currentSeasonStats?.asts}}</td>
+        <td>{{currentSeasonStats?.blks}}</td>
+        <td>{{currentSeasonStats?.stls}}</td>
+      </tr>
+    </tbody>
+    <thead>
+      <tr>
+        <th>Minutes</th>
+        <th>Turnovers</th>
+        <th>Personal Fouls</th>
+        <th>Field Goal %</th>
+        <th>3 Point %</th>
+        <th>Free Throw %</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{currentSeasonStats?.mins}}</td>
+        <td>{{currentSeasonStats?.tovs}}</td>
+        <td>{{currentSeasonStats?.pfs}}</td>
+        <td>{{currentSeasonStats?.fgPct}}</td>
+        <td>{{currentSeasonStats?.fg3Pct}}</td>
+        <td>{{currentSeasonStats?.ftPct}}</td>
+      </tr>
+    </tbody>
+    </table>
+  </div>
+  <div class="app-modal-footer">
+    <button type="button" class="btn btn-default" (click)="modal1.hide()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="addPlayer()">Add Player</button>
+  </div>
+</app-modal>
+
+<button type="button" class="btn btn-default" (click)="modal2.show()">Add Player to Rotation</button>
+
+<app-modal #modal2>
+  <div class="app-modal-header">
+    <label>Set Minutes</label>
+  </div>
+  <div class="app-modal-body">
+    <div *ngIf="team_arr">
+      <label><b>Player:</b></label>
+      <select [(ngModel)]="selectedPlayerName">
+        <option *ngFor="let player of team_arr" [value]="player?.name" >{{player?.name}}</option>
+      </select>
+      <label><b> at Position:</b></label>
+      <select [(ngModel)]="selectedPosition">
+        <option *ngFor="let pos of starter_pos" [value]="pos">{{pos}}</option>
+      </select>
+      <br>
+      <form>
+        <div class="form-group">
+          <label>Rotation Minute Start</label>
+          <input type="number" min="0" max="48" [(ngModel)]="min_start" name="min_start" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Rotation Minute End</label>
+          <input type="number" min="0" max="48" [(ngModel)]="min_end" name="min_end" class="form-control">
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="app-modal-footer">
+    <button type="button" class="btn btn-default" (click)="modal2.hide()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="addMinutes()">Add Player to Rotation</button>
+  </div>
+</app-modal> 
