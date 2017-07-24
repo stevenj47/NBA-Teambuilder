@@ -17,8 +17,12 @@ export class SimulateComponent implements OnInit {
   team2_period: any;
   period_length: number;
   current_time: number;
+  secs_counter: number;
+  team_switch: bool;
+  made_shot: bool;
   team1_lineup: {};
   team2_lineup: {};
+
 
   constructor(
     private teamService: TeamService,
@@ -99,6 +103,9 @@ export class SimulateComponent implements OnInit {
     });
 
     this.current_time = 0;
+    this.secs_counter = 0.0;
+    this.team_switch = false;
+    this.made_shot = false;
   }
 
   startSimulation() {
@@ -115,41 +122,88 @@ export class SimulateComponent implements OnInit {
         this.calculateTeamRotationEnd(this.team2_info, this.team2_period, false); 
       }
 
-      this.calculateScore();
+      this.simulateMin(false);
 
       this.current_time += 1;
     }
   }
 
-  calculateScore() {
-    let weightPts = 0.0;
-    let weightRbs = 0.0;
+  simulateMin() {
+    let weightPtsTeam1 = 0.0;
+    let weightRbsTeam1 = 0.0;
+
+    let weightPtsTeam2 = 0.0;
+    let weightRbsTeam2 = 0.0;
+
     for(let key of Object.keys(this.team1_lineup)) {
-      weightPts += this.team1_lineup[key].seasonStat.pts/this.team1_lineup[key].seasonStat.mins;
-      weightRbs += this.team1_lineup[key].seasonStat.rebs/this.team1_lineup[key].seasonStat.mins;
+      weightPtsTeam1 += this.team1_lineup[key].seasonStat.pts/this.team1_lineup[key].seasonStat.mins;
+      weightRbsTeam1 += this.team1_lineup[key].seasonStat.rebs/this.team1_lineup[key].seasonStat.mins;
+
+      weightPtsTeam2 += this.team2_lineup[key].seasonStat.pts/this.team2_lineup[key].seasonStat.mins;
+      weightRbsTeam2 += this.team2_lineup[key].seasonStat.rebs/this.team2_lineup[key].seasonStat.mins;
     }
 
+    this.secs_counter = 0.0;
+
+    while(this.secs_counter <= 60.0) {
+      calculateScore();
+    }
+  }
+
+  calculateScore() {
     let pos = ['pg', 'sg', 'sf', 'pf', 'c'];
+    let prevKey = null;
+    let pos_time = 3 + (Math.random() * 6);
+
     while(pos.length != 0) {
       let idx = Math.floor(Math.random() * pos.length);
       let key = pos[idx];
       pos.splice(idx, 1);
 
-      let scoreTend = this.team1_lineup[key].seasonStat.pts/this.team1_lineup[key].seasonStat.mins/weightPts;
-      let rebProb = this.team1_lineup[key].seasonStat.rebs/this.team1_lineup[key].seasonStat.mins/weightRbs;
+      let scoreTend = 0.0;
+      let rebProb = 0.0;
+
+      if(!team_switch) {
+        scoreTend = this.team1_lineup[key].seasonStat.pts/this.team1_lineup[key].seasonStat.mins/weightPtsTeam1;
+        rebProb = this.team1_lineup[key].seasonStat.rebs/this.team1_lineup[key].seasonStat.mins/weightRbsTeam1;
+      } else {
+        scoreTend = this.team2_lineup[key].seasonStat.pts/this.team2_lineup[key].seasonStat.mins/weightPtsTeam2;
+        rebProb = this.team2_lineup[key].seasonStat.rebs/this.team2_lineup[key].seasonStat.mins/weightRbsTeam2;
+      }
+
       let shootProb = Math.random();
       let scoreProb = Math.random();
+      let reboundProb = Math.random();
 
-      if(shootProb >= scoreTend && pos.length != 0) {
+      if(shootProb >= scoreTend && (24.0 - pos_time) >= 3.0) {
+        if(prevKey != null) {
+          pos.push(prevKey);
+        }
+        
+        pos_time += 2.0;
         console.log(this.team1_lineup[key].name, " has passed the ball!");
       } else {
         if(scoreProb >= this.team1_lineup[key].seasonStat.fgPct) {
           console.log(this.team1_lineup[key].name, " shot and missed!");
+          this.made_shot = false;
+          break;
         } else {
           console.log(this.team1_lineup[key].name, " shot and made the shot!");
+
+          if(prevKey != null) {
+            console.log(this.team1_lineup[prevKey].name, " got an assist!");
+          }
+      
+          this.made_shot = true;
+          break;
         }
       }
+
+      prevKey = key;
     }
+
+    this.secs_counter += (pos_time + 1.0);
+    this.team_switch = !this.team_switch;
   }
 
   calculateTeamRotationEnd(team_info, team_period, isTeam1) {
